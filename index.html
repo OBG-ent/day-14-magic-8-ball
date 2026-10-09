@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic 8-Ball 🔮</title>
+  <style>
+    /* ---- Day 14 (simple) · Magic 8-Ball · single-file app ---- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #f5f5f5;
+      background: radial-gradient(circle at 50% 30%, #2a2a4a 0%, #0e0e1c 70%);
+    }
+
+    h1 { font-size: 2rem; letter-spacing: 1px; }
+
+    p.hint { opacity: 0.7; font-size: 0.95rem; text-align: center; max-width: 420px; }
+
+    /* The ball: layered radial gradients give the glossy 3D look */
+    .ball {
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, #22223a 0%, #000 75%);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset -8px -12px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease;
+    }
+    .ball:hover { transform: scale(1.03); }
+
+    /* Little circular "window" where the fortune shows up */
+    .window {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 40%, #101a3a 0%, #05070f 70%);
+      border: 3px solid #1d1d33;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .answer {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #cfe4ff;
+      line-height: 1.35;
+      opacity: 0.25;
+      transition: opacity 0.4s ease;
+    }
+    .answer.revealed { opacity: 1; }
+
+    /* Shake animation applied via JS class */
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-12deg); }
+      40% { transform: rotate(10deg); }
+      60% { transform: rotate(-8deg); }
+      80% { transform: rotate(6deg); }
+    }
+    .ball.shaking { animation: shake 0.6s ease; }
+
+    #ask-btn {
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #0e0e1c;
+      background: linear-gradient(135deg, #ffd76a, #f5a623);
+      box-shadow: 0 6px 18px rgba(245, 166, 35, 0.35);
+    }
+    #ask-btn:hover { filter: brightness(1.08); }
+    #ask-btn:disabled { opacity: 0.5; cursor: default; }
+
+    #counter { opacity: 0.55; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>🔮 Magic 8-Ball</h1>
+  <p class="hint">Think of a yes-or-no question, then tap the ball (or the button) to reveal your fortune.</p>
+
+  <div class="ball" id="ball" role="button" aria-label="Shake the 8-ball">
+    <div class="window">
+      <div class="answer" id="answer">Ask me<br>anything…</div>
+    </div>
+  </div>
+
+  <button id="ask-btn">Shake the ball</button>
+  <div id="counter">Fortunes told: 0</div>
+
+  <script>
+    // All 20 classic Magic 8-Ball responses, grouped by vibe
+    const POSITIVE = ["It is certain.", "Without a doubt.", "Yes — definitely.", "Most likely.", "Signs point to yes."];
+    const NEUTRAL  = ["Reply hazy, try again.", "Ask again later.", "Better not tell you now.", "Cannot predict now.", "Concentrate and ask again."];
+    const NEGATIVE = ["Don't count on it.", "My reply is no.", "Outlook not so good.", "Very doubtful.", "No — and that's final."];
+    const BONUS    = ["The stars say: ship it. 🚀", "Absolutely — and tell your friends.", "Yes, but only on a Friday.", "The vibes are immaculate. ✨", "100%. No further questions."];
+    const ANSWERS = [...POSITIVE, ...NEUTRAL, ...NEGATIVE, ...BONUS];
+
+    const ball = document.getElementById("ball");
+    const answerEl = document.getElementById("answer");
+    const askBtn = document.getElementById("ask-btn");
+    const counterEl = document.getElementById("counter");
+    let count = 0;
+    let busy = false; // locks input while the ball is shaking
+
+    function shake() {
+      if (busy) return;
+      busy = true;
+      askBtn.disabled = true;
+      answerEl.classList.remove("revealed"); // fade the old answer out
+      ball.classList.add("shaking");
+
+      // After the shake animation, pick + reveal a random answer
+      setTimeout(() => {
+        const pick = ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
+        answerEl.textContent = pick;
+        answerEl.classList.add("revealed");
+        count++;
+        counterEl.textContent = `Fortunes told: ${count}`;
+        ball.classList.remove("shaking");
+        busy = false;
+        askBtn.disabled = false;
+      }, 600);
+    }
+
+    ball.addEventListener("click", shake);
+    askBtn.addEventListener("click", shake);
+  </script>
+</body>
+</html>
